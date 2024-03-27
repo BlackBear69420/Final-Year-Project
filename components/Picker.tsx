@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View, Image, PermissionsAndroid, Platform, ScrollView } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Image, PermissionsAndroid, Platform, ScrollView ,Alert} from 'react-native';
 import ImagePicker, { Image as ImageType } from 'react-native-image-crop-picker';
 
 const Picker = () => {
@@ -79,6 +79,57 @@ const Picker = () => {
   //     console.log('ImagePicker Error: ', error);
   //   }
   // };
+
+
+  const handleUpload = async () => {
+    if (selectedImage != null) {
+      const formData = new FormData();
+      formData.append('file', {
+        uri: selectedImage,
+        type: 'image/jpeg',
+        name: 'uploaded_image',
+      });
+      formData.append('upload_preset', 'yivau9kc'); // Use your actual upload preset name
+  
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dnz4gywty/image/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+  
+        if (!response.ok) {
+          throw new Error('Error uploading image');
+        }
+  
+        const responseData = await response.json();
+  
+        // Upon successful upload, Cloudinary typically responds with the image URL
+        const imageUrl = responseData.secure_url;
+        console.log(imageUrl);
+  
+        // Prepare data for post creation
+        const postData = {
+          userId,
+          post: imageUrl, // Use the Cloudinary image URL
+          description,
+        };
+  
+        // Send data to your backend for post creation
+        // Example: await sendPostData(postData);
+  
+        console.log('Cloudinary Response:', responseData);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Error uploading image. Please try again.');
+      }
+    } else {
+      Alert.alert('Please select an image');
+    }
+  };
+  
 
   return (
     <ScrollView>
